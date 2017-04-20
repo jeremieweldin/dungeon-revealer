@@ -1,5 +1,4 @@
 var express = require('express');
-var app = express();
 var path = require('path');
 var favicon = require('serve-favicon');
 var logger = require('morgan');
@@ -8,9 +7,20 @@ var session = require('cookie-session');
 var bodyParser = require('body-parser');
 var crypto = require('crypto');
 var fs = require('fs');
-var http = app.http = require('http').Server(app);
+var auth = require('http-auth');
 var io = require('socket.io')(http);
 var busboy = require('connect-busboy');
+
+var dmPassword = process.env.PASSWORD || "pass";
+var basic = auth.basic({
+        realm: "Web."
+    }, function (username, password, callback) { // Custom authentication method.
+        callback(username === "dm" && password === dmPassword);
+    }
+);
+
+var app = express();
+var http = app.http = require('http').Server(app);
 
 // Used to generate session keys
 var generateKey = function () {
@@ -53,9 +63,9 @@ app.use(session({secret: generateKey()}));
 // Routes
 // TODO: Move interior logic somewhere else
 app.get('/', function (req, res) {
-    res.render('player', {dm: false, title: 'Dungeon Revealer'});
+    res.sendFile(GENERATED_IMAGE_PATH);
 });
-app.get('/dm', function (req, res) {
+app.get('/dm', auth.connect(basic), function (req, res) {
     res.render('dm', {dm: true, title: 'Dungeon Revealer DM Console'});
 });
 
@@ -64,7 +74,7 @@ app.get('/map', function (req, res) {
     res.sendFile(GENERATED_IMAGE_PATH);
 });
 
-app.get('/dm/map', function (req, res) {
+app.get('/dm/map', auth.connect(basic), function (req, res) {
     
       var mapSent = false;
       
