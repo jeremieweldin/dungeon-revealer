@@ -1,0 +1,31 @@
+= dungeon-revealer
+
+link:++https://heroku.com/deploy?template=https://github.com/tkfu/dungeon-revealer&env[PASSWORD]=pass++[image:https://www.herokucdn.com/deploy/button.svg["Deploy to Heroku"]]
+
+A web app for tabletop gaming to allow the game master to reveal areas of the game map to players.
+
+Forked from https://github.com/apclary/dungeon-revealer, with Heroku deployment and basic auth for the DM added.
+
+== What the DM Sees
+
+image:http://apclary.github.io/dungeon-revealer/img/example_dm_1.jpeg[alt text,title="DM's view"]
+
+== What the players see
+
+image:https://apclary.github.io/dungeon-revealer/img/example_player_1.jpeg[alt text,title="Player's view"]
+
+== Installation
+
+link:++https://heroku.com/deploy?template=https://github.com/tkfu/dungeon-revealer&env[PASSWORD]=pass++[image:https://www.herokucdn.com/deploy/button.svg["Deploy to Heroku"]]
+
+This app includes basic authentication for the DM area. The username is *dm*, and the default password is *pass*. You can change the password by setting the PASSWORD environment variable in the app's Heroku settings.
+
+== Use
+
+Once you've deployed the app to Heroku, visit https://your-app-url.herokuapp.com/dm. Authenticate with username *dm* and the password you set up (*pass* by default), and then you'll be prompted to upload an image file. Once you do, you can start drawing on it.
+
+To clear areas of the map, click and draw on the map. If you clear too much, you can switch the brush to the "shroud brush" and restore some of the fog. Whenever you clear some of the map area and are ready to share it with the players, click "Send".
+
+Now, you can send your players to https://your-app-url.herokuapp.com, and they'll see only the part of the map you've revealed. What appears as a shadow to the DM will appear as pure blackness to players.
+
+To replace the existing map with a new image file, click "New Map". Note that you can only have one map open at a time, and shrouded areas are reset when you change maps.
