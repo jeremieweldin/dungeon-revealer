@@ -13,7 +13,7 @@ var busboy = require('connect-busboy');
 
 var dmPassword = process.env.PASSWORD || "pass";
 var basic = auth.basic({
-        realm: "Web."
+        realm: "Dungeon Revealer DM Login"
     }, function (username, password, callback) { // Custom authentication method.
         callback(username === "dm" && password === dmPassword);
     }
@@ -63,7 +63,11 @@ app.use(session({secret: generateKey()}));
 // Routes
 // TODO: Move interior logic somewhere else
 app.get('/', function (req, res) {
+    if (fs.existsSync(GENERATED_IMAGE_PATH)){
     res.sendFile(GENERATED_IMAGE_PATH);
+    } else {
+      res.redirect('/dm');
+    }
 });
 app.get('/dm', auth.connect(basic), function (req, res) {
     res.render('dm', {dm: true, title: 'Dungeon Revealer DM Console'});
