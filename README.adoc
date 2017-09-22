@@ -1,7 +1,7 @@
 = dungeon-revealer
 :toc:
 
-link:++https://heroku.com/deploy?template=https://github.com/tkfu/dungeon-revealer&env[PASSWORD]=pass++[image:https://www.herokucdn.com/deploy/button.svg["Deploy to Heroku"]]
+link:++https://heroku.com/deploy?template=https://github.com/jojo080889/dungeon-revealer&env[PASSWORD]=pass++[image:https://www.herokucdn.com/deploy/button.svg["Deploy to Heroku"]]
 
 == About
 
