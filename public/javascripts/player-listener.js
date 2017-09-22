@@ -19,19 +19,19 @@ define(['settings', 'jquery', 'io'], function (settings, jquery, io) {
             $('.oldest').addClass('transparent');
         }
     });
-    
+
     socket.on('connect', function() {
       console.log('connected to server');
     });
-    
+
     socket.on('reconnecting', function() {
       console.log('reconnecting to server');
     });
-    
+
     socket.on('reconnect', function() {
       console.log('reconnected to server');
     });
-    
+
     socket.on('reconnect_failed', function() {
       console.log('reconnect failed!');
     });
@@ -46,5 +46,3 @@ define(['settings', 'jquery', 'io'], function (settings, jquery, io) {
         return "hi";
     };
 });
-
-

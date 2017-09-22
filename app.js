@@ -8,7 +8,6 @@ var bodyParser = require('body-parser');
 var crypto = require('crypto');
 var fs = require('fs');
 var auth = require('http-auth');
-var io = require('socket.io')(http);
 var busboy = require('connect-busboy');
 
 var dmPassword = process.env.PASSWORD || "pass";
@@ -21,6 +20,8 @@ var basic = auth.basic({
 
 var app = express();
 var http = app.http = require('http').Server(app);
+
+var io = require('socket.io').listen(http);
 
 // Used to generate session keys
 var generateKey = function () {
@@ -35,7 +36,7 @@ var mostRecentImageData = null,
     GENERATED_IMAGE_PATH = path.join(UPLOADS_DIR + 'generatedMap.png');
 
 
-app.use(busboy()); 
+app.use(busboy());
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -64,7 +65,8 @@ app.use(session({secret: generateKey()}));
 // TODO: Move interior logic somewhere else
 app.get('/', function (req, res) {
     if (fs.existsSync(GENERATED_IMAGE_PATH)){
-    res.sendFile(GENERATED_IMAGE_PATH);
+    //res.sendFile(GENERATED_IMAGE_PATH);
+    res.render('player');
     } else {
       res.redirect('/dm');
     }
@@ -79,9 +81,9 @@ app.get('/map', function (req, res) {
 });
 
 app.get('/dm/map', auth.connect(basic), function (req, res) {
-    
+
       var mapSent = false;
-      
+
       if (mostRecentRawImagePath) {
           res.sendFile(mostRecentRawImagePath);
           mapSent = true;
@@ -90,9 +92,9 @@ app.get('/dm/map', auth.connect(basic), function (req, res) {
           // Look in the dir for a file named map.* and return the first one found
           // Because we are deleting the previous files on upload this logic is mostly useless now
           var files = fs.readdirSync(UPLOADS_DIR);
-          files.filter(function(file) { 
-              return file.indexOf('map.') > -1; 
-          }).forEach(function(file) { 
+          files.filter(function(file) {
+              return file.indexOf('map.') > -1;
+          }).forEach(function(file) {
               var filePath = path.join(UPLOADS_DIR + file);
               if (!mapSent) {
                   mapSent = true;
@@ -101,13 +103,13 @@ app.get('/dm/map', auth.connect(basic), function (req, res) {
               }
           });
       }
-      
+
       if (!mapSent) {
           res.sendStatus(404);
       }
 });
 
-// For DM map uploads. These are the raw images without any fog of war. 
+// For DM map uploads. These are the raw images without any fog of war.
 app.post('/upload', function (req, res) {
 
     req.pipe(req.busboy);
@@ -117,11 +119,11 @@ app.post('/upload', function (req, res) {
         var fileExtension = filename.split('.').pop(),
             uploadedImageSavePath = path.join(UPLOADS_DIR + 'map.' + fileExtension),
             fstream;
-            
+
         deleteExistingMapFilesSync();
-            
+
         fstream = fs.createWriteStream(uploadedImageSavePath);
-        
+
         file.pipe(fstream);
         fstream.on('close', function () {
             console.log('map uploaded');
@@ -136,23 +138,23 @@ app.post('/upload', function (req, res) {
 // For the DM sending out fogged maps to be distributed to players
 app.post('/send', function (req, res) {
     var imageDataString = req.body.imageData;
-    
+
     if (imageDataString) {
         var imageData = decodeBase64Image(imageDataString).data;
-        
+
         fs.writeFile(GENERATED_IMAGE_PATH, imageData, function (err) {
             console.log('sent map saved');
         });
-      
+
         // Cache the data for future requests
         mostRecentImageData = imageDataString;
-        
+
         // ACK for DM
         res.json({
             'success': true,
             'responseText': 'Image successfully uploaded'
         });
-        
+
         // Send the map update to players
         io.emit('map update', {
             'imageData': imageDataString
@@ -163,7 +165,7 @@ app.post('/send', function (req, res) {
             'responseText': 'Image not uploaded successfully'
         });
     }
-  
+
 });
 
 
@@ -201,38 +203,38 @@ app.use(function (err, req, res, next) {
 
 io.on('connection', function(socket) {
       console.log('a user connected');
-      
+
       if (mostRecentImageData) {
           console.log('sending current map to newly connected user');
           socket.emit('map update', {
               'imageData': mostRecentImageData
           });
       }
-      
+
       socket.on('disconnect', function() {
-          console.log('a user disconnected'); 
+          console.log('a user disconnected');
       });
 });
 
 function decodeBase64Image(dataString) {
     var matches = dataString.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/),
       response = {};
-  
+
     if (matches.length !== 3) {
       return new Error('Invalid input string');
     }
-  
+
     response.type = matches[1];
     response.data = new Buffer(matches[2], 'base64');
-  
+
     return response;
 }
 
 function deleteExistingMapFilesSync() {
     var files = fs.readdirSync(UPLOADS_DIR);
-    files.filter(function(file) { 
-        return file.indexOf('map.') > -1; 
-    }).forEach(function(file) { 
+    files.filter(function(file) {
+        return file.indexOf('map.') > -1;
+    }).forEach(function(file) {
         var filePath = path.join(UPLOADS_DIR + file);
         fs.unlinkSync(filePath);
     });
